@@ -199,9 +199,7 @@ void mostrapontos(){
     }
     else{
 
-        for(int i=0;i<RANKING;i++){
-            fread(&jogador[i], sizeof(struct rank), 1, hiscore);
-        }
+        fread(jogador, sizeof(struct rank), RANKING, hiscore);
 
         posicao_tela(30,30);
         printf("HISCORE:");
@@ -283,9 +281,7 @@ void pontuacao(int maiorpontuacao){
     }
     else{
 
-        for(int i=0;i<RANKING;i++){
-            fread(&jogador[i], sizeof(struct rank), 1, hiscore);
-        }
+        fread(jogador, sizeof(struct rank), RANKING, hiscore);
 
         posicao_tela(40,30);
         printf("HISCORE:");
@@ -296,7 +292,6 @@ void pontuacao(int maiorpontuacao){
             posicao_tela(50,(31+i));
             printf("%i PONTOS", jogador[i].score);
         }
-
 
         for(int i=0;i<RANKING;i++){
             if (maiorpontuacao>jogador[i].score){
@@ -318,9 +313,8 @@ void pontuacao(int maiorpontuacao){
                 jogador[i].score=maiorpontuacao;
 
                 rewind(hiscore);
-                for(int j=0;j<RANKING;j++){
-                    fwrite(&jogador[j], sizeof(struct rank), 1,hiscore);
-                }
+                fwrite(jogador, sizeof(struct rank), RANKING,hiscore);
+
                 break;
             }
         }
@@ -410,7 +404,6 @@ int gameplay(int *maiorpontuacao){
             for(int i=0;i<bomba[0].aux;i++){ //Bombas dos alienigenas
                 bomba_(&bomba[i], jogo.mapa, &morte);
             }
-
             if(bomba[0].aux==1000)
                 bomba[0].aux=0;
 
@@ -471,7 +464,6 @@ int gameplay(int *maiorpontuacao){
 
             getch();
             vida-=1;
-
         }
 
     }
