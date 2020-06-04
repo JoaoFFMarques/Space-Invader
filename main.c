@@ -24,6 +24,11 @@ typedef struct variaveis{
     char **mapa;
 }variavel;
 
+typedef struct rank{
+    int score;
+    char nome[5];
+}ranking;
+
 void menu();
 void sobre();
 void mostrapontos();
@@ -44,7 +49,7 @@ void imprimir_mapa(int *aux_jogo, int *aux_disparo, char **mapa, int *pontos, in
 void controle_inimigo(int *x, int *y, char **mapa_jogo, char **mapa_inimigo, char **mapa_colisao, int *descer, int direcao);
 void controle(char comando, int *y, int *x, int *aux_disparo, int *disparo);
 void disparo_(variavel* disparo, char **mapa, char **colisao);
-void bomba_(int *efetuado, int *Y, int X, char **mapa, int *morte);
+void bomba_(variavel* bomba, char **mapa, int *morte);
 
 void textcolor(int iColor);
 void posicao_tela(int X, int Y);
@@ -176,11 +181,11 @@ void sobre(){
 void mostrapontos(){
 
     FILE *hiscore;
-    int score[RANKING];
-    char iniciais[RANKING][5];
+
+    ranking jogador[RANKING];
 
     for(int i=0;i<=RANKING;i++){
-        score[i]=0;
+        jogador[i].score=0;
     }
 
     apagar_tela();
@@ -193,22 +198,21 @@ void mostrapontos(){
         fclose(hiscore);
     }
     else{
+
         for(int i=0;i<RANKING;i++){
-            fread(&score[i], sizeof(int), 1, hiscore);
-            fgets(iniciais[i],5,hiscore);
+            fread(&jogador[i], sizeof(struct rank), 1, hiscore);
         }
 
         posicao_tela(30,30);
         printf("HISCORE:");
 
-        for(int i=0;i<RANKING && score[i]!=0;i++){
+        for(int i=0;i<RANKING && jogador[i].score!=0;i++){
             posicao_tela(30,(31+i));
-            printf("%i %s", i+1, iniciais[i]);
+            printf("%i %s", i+1, jogador[i].nome);
             posicao_tela(40,(31+i));
-            printf("%i PONTOS", score[i]);
+            printf("%i PONTOS", jogador[i].score);
         }
         fclose(hiscore);
-
     }
     getch();
     apagar_tela();
@@ -245,14 +249,11 @@ void pontuacao(int maiorpontuacao){
 
     FILE *hiscore;
 
-    char iniciaisatual[5];
-    int score[RANKING];
-    char iniciais[RANKING][5];
+    ranking jogador[RANKING];
 
-    for(int i=0;i<RANKING;i++){
-        score[i]=0;
+    for(int i=0;i<=RANKING;i++){
+        jogador[i].score=0;
     }
-
 
     logo();
 
@@ -267,112 +268,64 @@ void pontuacao(int maiorpontuacao){
     if(hiscore==NULL){
         fclose(hiscore);
         hiscore=fopen("score.bin", "w+b");
+        jogador[0].score=maiorpontuacao;
         posicao_tela(40,35);
         printf("INSIRA SUAS INICIAIS (ATÉ 4 CARACTERES)");
         posicao_tela(40,37);
-        fgets(iniciaisatual, 5, stdin);
+        fgets(jogador[0].nome, 5, stdin);
         getchar();
-        iniciaisatual[strcspn( iniciaisatual, "\n" )] = '\0';
+        jogador[0].nome[strcspn(jogador[0].nome, "\n" )] = '\0';
 
-        fwrite(&maiorpontuacao, sizeof(int), 1, hiscore);
-        fwrite(iniciaisatual, sizeof(strlen(iniciaisatual)), 1, hiscore);
+        fwrite(jogador, sizeof(struct rank), 1,hiscore);
+
         fclose(hiscore);
 
     }
     else{
 
-        for (int i=0;i<RANKING;i++){
-            fread(&score[i], sizeof(int), 1, hiscore);
-            fgets(iniciais[i],5,hiscore);
+        for(int i=0;i<RANKING;i++){
+            fread(&jogador[i], sizeof(struct rank), 1, hiscore);
         }
 
         posicao_tela(40,30);
         printf("HISCORE:");
 
-        for(int i=0;i<RANKING && score[i]!=0;i++){
+        for(int i=0;i<RANKING && jogador[i].score!=0;i++){
             posicao_tela(40,(31+i));
-            printf("%i %s", i+1, iniciais[i]);
+            printf("%i %s", i+1, jogador[i].nome);
             posicao_tela(50,(31+i));
-            printf("%i PONTOS", score[i]);
+            printf("%i PONTOS", jogador[i].score);
         }
 
+
+        for(int i=0;i<RANKING;i++){
+            if (maiorpontuacao>jogador[i].score){
+
+                posicao_tela(40,35);
+                printf("INSIRA SUAS INICIAIS (ATÉ 4 CARACTERES)");
+                posicao_tela(40,37);
+
+                if(i+2<RANKING){
+                  jogador[i+2]=jogador[i+1];
+                }
+                if(i+1<RANKING){
+                  jogador[i+1]=jogador[i];
+                }
+
+                fgets(jogador[i].nome, 5, stdin);
+                getchar();
+                jogador[i].nome[strcspn(jogador[i].nome, "\n" )] = '\0';
+                jogador[i].score=maiorpontuacao;
+
+                rewind(hiscore);
+                for(int j=0;j<RANKING;j++){
+                    fwrite(&jogador[j], sizeof(struct rank), 1,hiscore);
+                }
+                break;
+            }
+        }
         fclose(hiscore);
-        rewind(hiscore);
-
-        if (maiorpontuacao>score[0]){
-
-            hiscore=fopen("score.bin", "r+b");
-
-            posicao_tela(40,35);
-            printf("INSIRA SUAS INICIAIS (ATÉ 4 CARACTERES)");
-            posicao_tela(40,37);
-            fgets(iniciaisatual, 5, stdin);
-            getchar();
-            iniciaisatual[strcspn( iniciaisatual, "\n" )] = '\0';
-
-            fwrite(&maiorpontuacao, sizeof(int), 1, hiscore);
-            fwrite(iniciaisatual, sizeof(strlen(iniciaisatual)), 1, hiscore);
-
-            fwrite(&score[0], sizeof(int), 1, hiscore);
-            fwrite(iniciais[0], sizeof(strlen(iniciais[0])), 1, hiscore);
-
-            if(score[1]!=0){
-                fwrite(&score[1], sizeof(int), 1, hiscore);
-                fwrite(iniciais[1], sizeof(strlen(iniciais[1])), 1, hiscore);
-            }
-
-            fclose(hiscore);
-        }
-
-        else if (maiorpontuacao>score[1]){
-
-            hiscore=fopen("score.bin", "r+b");
-
-            posicao_tela(40,35);
-            printf("INSIRA SUAS INICIAIS (ATÉ 4 CARACTERES)");
-            posicao_tela(40,37);
-            fgets(iniciaisatual, 5, stdin);
-            getchar();
-            iniciaisatual[strcspn( iniciaisatual, "\n" )] = '\0';
-
-            fwrite(&score[0], sizeof(int), 1, hiscore);
-            fwrite(iniciais[0], sizeof(strlen(iniciais[0])), 1, hiscore);
-
-            fwrite(&maiorpontuacao, sizeof(int), 1, hiscore);
-            fwrite(iniciaisatual, sizeof(strlen(iniciaisatual)), 1, hiscore);
-
-            if(score[1]!=0){
-                fwrite(&score[1], sizeof(int), 1, hiscore);
-                fwrite(iniciais[1], sizeof(strlen(iniciais[1])), 1, hiscore);
-            }
-
-            fclose(hiscore);
-        }
-
-        else if (maiorpontuacao>score[2]){
-
-            hiscore=fopen("score.bin", "r+b");
-
-            posicao_tela(40,35);
-            printf("INSIRA SUAS INICIAIS (ATÉ 4 CARACTERES)");
-            posicao_tela(40,37);
-            fgets(iniciaisatual, 5, stdin);
-            getchar();
-            iniciaisatual[strcspn( iniciaisatual, "\n" )] = '\0';
-
-            fwrite(&score[0], sizeof(int), 1, hiscore);
-            fwrite(iniciais[0], sizeof(strlen(iniciais[0])), 1, hiscore);
-
-            fwrite(&score[1], sizeof(int), 1, hiscore);
-            fwrite(iniciais[1], sizeof(strlen(iniciais[1])), 1, hiscore);
-
-            fwrite(&maiorpontuacao, sizeof(int), 1, hiscore);
-            fwrite(iniciaisatual, sizeof(strlen(iniciaisatual)), 1, hiscore);
-
-            fclose(hiscore);
-        }
     }
-
     getch();
     apagar_tela();
 
@@ -440,7 +393,6 @@ int gameplay(int *maiorpontuacao){
             fflush(stdin);
 
             for(int i=0;i<nave.aux;i++){ //disparos da nave
-                //disparo_(&disparo[i].efetuado, &disparo[i].y, disparo[i].x, jogo.mapa, colisao.mapa);
                 disparo_(&disparo[i], jogo.mapa, colisao.mapa);
             }
 
@@ -456,7 +408,7 @@ int gameplay(int *maiorpontuacao){
                 }
             }
             for(int i=0;i<bomba[0].aux;i++){ //Bombas dos alienigenas
-                bomba_(&bomba[i].efetuado, &bomba[i].y, bomba[i].x, jogo.mapa, &morte);
+                bomba_(&bomba[i], jogo.mapa, &morte);
             }
 
             if(bomba[0].aux==1000)
@@ -858,32 +810,32 @@ void disparo_(variavel* disparo, char **mapa, char **colisao){
 
 }
 
-void bomba_(int *efetuado, int *Y, int X, char **mapa, int *morte){
+void bomba_(variavel* bomba, char **mapa, int *morte){
 
-    if(*efetuado==1){
-        if(mapa[*Y+1][X]=='#'){
-            *efetuado=0;
-            mapa[*Y+1][X]=' ';
+    if(bomba->efetuado==1){
+        if(mapa[bomba->y+1][bomba->x]=='#'){
+            bomba->efetuado=0;
+            mapa[bomba->y+1][bomba->x]=' ';
         }
 
-        else if(mapa[*Y+1][X]=='A' ||
-                mapa[*Y+1][X]=='<' ||
-                mapa[*Y+1][X]=='>' ){
+        else if(mapa[bomba->y+1][bomba->x]=='A' ||
+                mapa[bomba->y+1][bomba->x]=='<' ||
+                mapa[bomba->y+1][bomba->x]=='>' ){
             *morte+=1;
-            *efetuado=0;
+            bomba->efetuado=0;
         }
 
-        else if (*Y==(TELA-2))
-            *efetuado=0;
+        else if (bomba->y==(TELA-2))
+            bomba->efetuado=0;
 
-        if (*efetuado==1){
-            mapa[*Y][X]=' ';
-            *Y+=1;
-            mapa[*Y][X]='*';
+        if (bomba->efetuado==1){
+            mapa[bomba->y][bomba->x]=' ';
+            bomba->y+=1;
+            mapa[bomba->y][bomba->x]='*';
         }
 
-        else if(*efetuado==0)
-            mapa[*Y][X]=' ';
+        else if(bomba->efetuado==0)
+            mapa[bomba->y][bomba->x]=' ';
 
        }
 
