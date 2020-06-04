@@ -193,24 +193,19 @@ void mostrapontos(){
         fclose(hiscore);
     }
     else{
-        int i=0;
-        while(i<RANKING){
+        for(int i=0;i<RANKING;i++){
             fread(&score[i], sizeof(int), 1, hiscore);
             fgets(iniciais[i],5,hiscore);
-            i++;
         }
 
         posicao_tela(30,30);
         printf("HISCORE:");
 
-        i=0;
-
-        while(i<RANKING && score[i]!=0){
+        for(int i=0;i<RANKING && score[i]!=0;i++){
             posicao_tela(30,(31+i));
             printf("%i %s", i+1, iniciais[i]);
             posicao_tela(40,(31+i));
             printf("%i PONTOS", score[i]);
-            i++;
         }
         fclose(hiscore);
 
@@ -286,24 +281,19 @@ void pontuacao(int maiorpontuacao){
     }
     else{
 
-        int i=0;
-        while(i<RANKING){
+        for (int i=0;i<RANKING;i++){
             fread(&score[i], sizeof(int), 1, hiscore);
             fgets(iniciais[i],5,hiscore);
-            i++;
         }
 
         posicao_tela(40,30);
         printf("HISCORE:");
 
-        i=0;
-
-        while(i<RANKING && score[i]!=0){
+        for(int i=0;i<RANKING && score[i]!=0;i++){
             posicao_tela(40,(31+i));
             printf("%i %s", i+1, iniciais[i]);
             posicao_tela(50,(31+i));
             printf("%i PONTOS", score[i]);
-            i++;
         }
 
         fclose(hiscore);
@@ -902,7 +892,7 @@ void bomba_(int *efetuado, int *Y, int X, char **mapa, int *morte){
 void textcolor (int iColor){ //comandos com windows.h
     HANDLE hl = GetStdHandle(STD_OUTPUT_HANDLE);
     CONSOLE_SCREEN_BUFFER_INFO bufferInfo;
-    BOOL b = GetConsoleScreenBufferInfo(hl, &bufferInfo);
+    GetConsoleScreenBufferInfo(hl, &bufferInfo);
     bufferInfo.wAttributes &= 0x00F0;
     SetConsoleTextAttribute (hl, bufferInfo.wAttributes |= iColor);
 }
