@@ -1,10 +1,3 @@
-/*
-Space Invader
-Jogo Trabalho Daniela
-Jota & Felipe
-16/05/20
-*/
-
 #include <stdio.h>
 #include <conio.h>
 #include <time.h>
@@ -56,7 +49,6 @@ void posicao_tela(int X, int Y);
 void apagar_tela();
 void pausar();
 void logo();
-
 
 int main(){
 
